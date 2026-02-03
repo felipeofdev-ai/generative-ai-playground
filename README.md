@@ -1,31 +1,43 @@
 # Generative AI Playground
 
-This repository contains practical experiments and small projects using Generative AI and Large Language Models (LLMs) with Python.
+This repository contains practical experiments and small projects using
+Generative AI and Large Language Models (LLMs) with Python.
 
-The goal is to explore prompt engineering, API integrations and AI-powered automations.
+The goal is to explore prompt engineering, API integrations, and AI-powered automations.
 
----
-
-## 🧠 Topics Covered
+## Topics Covered
 
 - Prompt engineering basics
 - LLM API integration
-- Text generation and summarization
+- Text generation
+- Text summarization
 - AI-powered automation examples
 
----
-
-## 🛠️ Technologies
+## Technologies
 
 - Python 3
-- LLM APIs
+- OpenAI API
 - Prompt Engineering
 
----
+## Project Structure
+generative-ai-playground/
+│── README.md
+│── requirements.txt
+│── .env.example
+│── prompt_engineering.py
+│── text_generation.py
+│── summarization.py
+│── automation_example.py
 
-## ▶️ Setup
+## Setup
 
 Create a virtual environment and install dependencies:
 
 ```bash
 pip install -r requirements.txt
+Create a .env file based on .env.example and add your API key.
+
+Author
+
+Felipe Oliveira
+Python Developer | Backend | Automation | Generative AI
