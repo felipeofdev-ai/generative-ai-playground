@@ -1,0 +1,4 @@
+[
+  {"id":"case-1","input":"Resuma o chamado #123","expected":"Resumo com ação"},
+  {"id":"case-2","input":"Explique política de retenção","expected":"Resposta policy-compliant"}
+]

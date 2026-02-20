@@ -1,0 +1,7 @@
+fallback:
+  - when: provider_unhealthy
+    from: gpt-4o
+    to: gpt-4o-mini
+  - when: cost_budget_exceeded
+    from: claude-3-5-sonnet
+    to: deepseek-chat
