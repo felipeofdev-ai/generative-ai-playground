@@ -29,6 +29,16 @@ generative-ai-playground/
 │── summarization.py
 │── automation_example.py
 
+## NexusAI Documentation
+
+- Full system documentation (PT-BR): `docs/nexusai-documentacao.md`
+- Implementation blueprint (EN): `docs/nexusai-implementation-blueprint.md`
+- Enterprise architecture (PT-BR): `docs/nexusai-enterprise-architecture.md`
+- ADK integration plan (PT-BR): `docs/nexusai-adk-integration-plan.md`
+- Reference artifacts: `docs/reference/`
+- Production hardening plan (PT-BR): `docs/nexusai-production-hardening-plan.md`
+- Operational modules: `feature-flags/`, `runtime-control/`, `governance/`, `tests/`
+
 ## Setup
 
 Create a virtual environment and install dependencies:
