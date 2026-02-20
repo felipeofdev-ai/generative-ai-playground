@@ -1,53 +1,87 @@
-# Generative AI Playground
+# NexusAI / Generative AI Playground
 
-This repository contains practical experiments and small projects using
-Generative AI and Large Language Models (LLMs) with Python.
+Monorepo com playgrounds de IA generativa e um stack funcional de orquestração **NexusAI** (API FastAPI, gateway Rust, worker Celery, mesh Go e web Next.js).
 
-The goal is to explore prompt engineering, API integrations, and AI-powered automations.
+## O que está funcional neste PR
 
-## Topics Covered
+- API FastAPI em `apps/api` com endpoint de saúde e rotas Nexus.
+- Gateway Rust em `gateway-rust` para proxy/rate-limit.
+- Worker Celery em `apps/worker`.
+- Mesh service em Go em `mesh-go`.
+- Frontend base Next.js em `apps/web`.
+- Stack local de desenvolvimento via `docker-compose.yml`.
 
-- Prompt engineering basics
-- LLM API integration
-- Text generation
-- Text summarization
-- AI-powered automation examples
+## Estrutura principal
 
-## Technologies
+- `apps/api/` — API Python/FastAPI
+- `apps/worker/` — processamento assíncrono (Celery)
+- `gateway-rust/` — API gateway
+- `mesh-go/` — serviço de eventos/malha
+- `apps/web/` — frontend Next.js
+- `infra/docker/postgres-init.sql` — init script do Postgres
+- `docker-compose.yml` — orquestração local
 
-- Python 3
-- OpenAI API
-- Prompt Engineering
+## Pré-requisitos
 
-## Project Structure
-generative-ai-playground/
-│── README.md
-│── requirements.txt
-│── .env.example
-│── prompt_engineering.py
-│── text_generation.py
-│── summarization.py
-│── automation_example.py
+- Python 3.12+
+- Docker + Docker Compose
+- (opcional) Rust/Go/Node para rodar serviços fora do compose
 
-## NexusAI Documentation
+## Configuração rápida
 
-- Full system documentation (PT-BR): `docs/nexusai-documentacao.md`
-- Implementation blueprint (EN): `docs/nexusai-implementation-blueprint.md`
-- Enterprise architecture (PT-BR): `docs/nexusai-enterprise-architecture.md`
-- ADK integration plan (PT-BR): `docs/nexusai-adk-integration-plan.md`
-- Reference artifacts: `docs/reference/`
-- Production hardening plan (PT-BR): `docs/nexusai-production-hardening-plan.md`
-- Operational modules: `feature-flags/`, `runtime-control/`, `governance/`, `tests/`
-
-## Setup
-
-Create a virtual environment and install dependencies:
+1. Copie variáveis de ambiente:
 
 ```bash
+cp .env.example .env
+```
+
+2. Ajuste chaves/API keys no `.env`.
+
+3. Suba stack:
+
+```bash
+docker compose up -d --build
+```
+
+4. Verifique serviços:
+
+- API: `http://localhost:8000/health`
+- Gateway: `http://localhost:8080/health`
+- Mesh: `http://localhost:9000/health`
+- Web: `http://localhost:3000`
+
+## Desenvolvimento local (sem docker)
+
+### API
+```bash
 pip install -r requirements.txt
-Create a .env file based on .env.example and add your API key.
+uvicorn apps.api.app.main:app --reload --port 8000
+```
 
-Author
+### Testes
+```bash
+pytest -q
+python -m compileall apps/api/app
+```
 
-Felipe Oliveira
-Python Developer | Backend | Automation | Generative AI
+## Variáveis importantes
+
+Veja `.env.example`. Destaques:
+
+- `DATABASE_URL`
+- `REDIS_URL`
+- `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `DEEPSEEK_API_KEY`
+- `MIGRATE_ON_START`
+- `NEXT_PUBLIC_API_URL`
+
+## Observações
+
+- `MIGRATE_ON_START=1` tenta rodar Alembic no container da API **somente se** `alembic.ini` existir.
+- Se estiver apenas no modo playground, mantenha `MIGRATE_ON_START=0`.
+
+## Documentação adicional
+
+- `docs/nexusai-documentacao.md`
+- `docs/nexusai-implementation-blueprint.md`
+- `docs/nexusai-enterprise-architecture.md`
+- `docs/nexusai-production-hardening-plan.md`
