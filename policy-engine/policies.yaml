@@ -1,0 +1,6 @@
+policies:
+  allowed_models_per_tenant:
+    enterprise: [gpt-4o, claude-3-5-sonnet, deepseek-chat]
+  max_tokens_per_call: 4096
+  disallowed_topics: [self-harm-instructions, illegal-activity]
+  required_pii_scan: true

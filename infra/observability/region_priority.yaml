@@ -1,0 +1,7 @@
+regions:
+  - us-east-1
+  - eu-west-1
+  - ap-southeast-1
+failover:
+  health_check_interval_seconds: 10
+  switch_threshold_failures: 3
