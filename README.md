@@ -29,6 +29,11 @@ generative-ai-playground/
 │── summarization.py
 │── automation_example.py
 
+## NexusAI Documentation
+
+- Full system documentation (PT-BR): `docs/nexusai-documentacao.md`
+- Implementation blueprint (EN): `docs/nexusai-implementation-blueprint.md`
+
 ## Setup
 
 Create a virtual environment and install dependencies:
