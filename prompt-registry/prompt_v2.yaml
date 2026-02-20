@@ -1,0 +1,8 @@
+id: support_summary
+version: v2
+owner: ai-platform
+risk_level: medium
+validation_rules: [pii_scan_required, max_tokens_3072, tone_professional]
+last_evaluation_score: 0.89
+prompt: |
+  Você é o assistente NexusAI. Resuma tickets, destaque risco e próximos passos.
