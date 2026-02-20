@@ -1,4 +1,22 @@
-from . import api_keys, auth, costs, governance, inference, knowledge_base, metrics, models, pipelines, tenants, users, webhooks
+"""
+NexusAI — Router registry
+Import all routers here so main.py can reference them cleanly.
+"""
+from app.routers import (
+    auth,
+    users,
+    api_keys,
+    pipelines,
+    knowledge_base,
+    governance,
+    costs,
+    metrics,
+    tenants,
+    inference,
+    models,
+    webhooks,
+    nexus,
+)
 
 __all__ = [
     "auth",
@@ -13,4 +31,5 @@ __all__ = [
     "inference",
     "models",
     "webhooks",
+    "nexus",
 ]

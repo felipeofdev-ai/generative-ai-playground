@@ -1,53 +1,37 @@
-# Generative AI Playground
+# NexusAI — Enterprise GenAI Platform
 
-This repository contains practical experiments and small projects using
-Generative AI and Large Language Models (LLMs) with Python.
+Stack local com API FastAPI, worker Celery, gateway Rust, mesh Go e frontend Next.js.
 
-The goal is to explore prompt engineering, API integrations, and AI-powered automations.
-
-## Topics Covered
-
-- Prompt engineering basics
-- LLM API integration
-- Text generation
-- Text summarization
-- AI-powered automation examples
-
-## Technologies
-
-- Python 3
-- OpenAI API
-- Prompt Engineering
-
-## Project Structure
-generative-ai-playground/
-│── README.md
-│── requirements.txt
-│── .env.example
-│── prompt_engineering.py
-│── text_generation.py
-│── summarization.py
-│── automation_example.py
-
-## NexusAI Documentation
-
-- Full system documentation (PT-BR): `docs/nexusai-documentacao.md`
-- Implementation blueprint (EN): `docs/nexusai-implementation-blueprint.md`
-- Enterprise architecture (PT-BR): `docs/nexusai-enterprise-architecture.md`
-- ADK integration plan (PT-BR): `docs/nexusai-adk-integration-plan.md`
-- Reference artifacts: `docs/reference/`
-- Production hardening plan (PT-BR): `docs/nexusai-production-hardening-plan.md`
-- Operational modules: `feature-flags/`, `runtime-control/`, `governance/`, `tests/`
-
-## Setup
-
-Create a virtual environment and install dependencies:
+## Quick Start (Docker)
 
 ```bash
-pip install -r requirements.txt
-Create a .env file based on .env.example and add your API key.
+cp .env.example .env
+docker compose up -d --build
+```
 
-Author
+Acessos:
 
-Felipe Oliveira
-Python Developer | Backend | Automation | Generative AI
+- Web UI: http://localhost:3000
+- API docs: http://localhost:8000/docs
+- Gateway health: http://localhost:8080/health
+- Mesh health: http://localhost:9000/health
+
+## Observações importantes
+
+- `MIGRATE_ON_START=1` só roda migração se `alembic.ini` existir.
+- Com `MIGRATE_ON_START=0`, sobe direto `uvicorn`.
+
+## Desenvolvimento
+
+```bash
+make test
+make lint
+```
+
+## Arquitetura
+
+- `apps/api` — FastAPI + Nexus router/services
+- `apps/worker` — Celery workers
+- `gateway-rust` — gateway/rate limiting
+- `mesh-go` — event mesh service
+- `apps/web` — Next.js
