@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexusai-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: nexusai-api }
+  template:
+    metadata:
+      labels: { app: nexusai-api }
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/nexusai/api:latest
+          ports: [{ containerPort: 8001 }]

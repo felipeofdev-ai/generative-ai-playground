@@ -1,0 +1,1 @@
+{"title":"NexusAI Overview","panels":[{"type":"stat","title":"RPS"},{"type":"timeseries","title":"Latency p95"},{"type":"timeseries","title":"Cost/min"}]}
