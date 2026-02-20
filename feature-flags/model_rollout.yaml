@@ -1,0 +1,12 @@
+rollouts:
+  - model: gpt-4o
+    traffic: 50
+  - model: gpt-4o-mini
+    traffic: 50
+canary:
+  enabled: true
+  percentage: 10
+ab_testing:
+  prompt_a: support_summary_v1
+  prompt_b: support_summary_v2
+  split: [50, 50]

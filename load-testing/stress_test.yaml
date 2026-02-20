@@ -1,0 +1,6 @@
+targets:
+  rps: 1000
+  concurrent_users: 10000
+checks:
+  - latency_p95
+  - memory_leak
