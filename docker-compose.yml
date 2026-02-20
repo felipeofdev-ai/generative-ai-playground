@@ -1,0 +1,137 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: nexusai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nexusai
+      POSTGRES_PASSWORD: nexusai
+      POSTGRES_DB: nexusai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexusai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexusai-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    init: true
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: nexusai-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://nexusai:nexusai@postgres:5432/nexusai
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+      MIGRATE_ON_START: ${MIGRATE_ON_START:-0}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      JWT_SECRET: ${JWT_SECRET:-nexusai-dev-secret-minimum-32-chars-here}
+      MASTER_ENCRYPTION_KEY: ${MASTER_ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build:
+      context: ./apps/worker
+      dockerfile: Dockerfile
+    container_name: nexusai-worker
+    restart: unless-stopped
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ./gateway-rust
+      dockerfile: Dockerfile
+    container_name: nexusai-gateway
+    restart: unless-stopped
+    environment:
+      UPSTREAM_URL: http://api:8000
+      REDIS_URL: redis://redis:6379/0
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mesh:
+    build:
+      context: ./mesh-go
+      dockerfile: Dockerfile
+    container_name: nexusai-mesh
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      PORT: 9000
+    ports:
+      - "9000:9000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: nexusai-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+    depends_on:
+      gateway:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: nexusai-network
