@@ -1,0 +1,6 @@
+metrics:
+  - hallucination_score
+  - latency_p95
+  - token_cost
+  - safety_score
+  - deterministic_replay_diff
