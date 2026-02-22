@@ -1,1 +1,1 @@
-"""Services package."""
+"""NexusAI Services"""

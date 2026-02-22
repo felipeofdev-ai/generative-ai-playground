@@ -1,4 +1,4 @@
-# Generative AI Playground
+# NexusAI — Enterprise GenAI Platform
 
 This repository contains practical experiments and projects involving Generative AI and LLM-based platform components.
 
@@ -20,7 +20,6 @@ This repository contains practical experiments and projects involving Generative
 - Docker / Terraform / Helm
 
 ## Project Structure
-
 ```text
 generative-ai-playground/
 ├── apps/
@@ -51,15 +50,13 @@ generative-ai-playground/
 
 1. Create and activate a virtual environment.
 2. Install dependencies:
-
 ```bash
 pip install -r requirements.txt
 ```
-
 3. Create a `.env` file based on `.env.example` and configure provider credentials.
 4. Run local services with your preferred workflow (`docker-compose`, direct FastAPI + worker, etc.).
 
 ## Author
 
-Felipe Oliveira
+Felipe Oliveira  
 Python Developer | Backend | Automation | Generative AI

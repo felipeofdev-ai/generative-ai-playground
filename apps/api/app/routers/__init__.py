@@ -14,4 +14,5 @@ __all__ = [
     "inference",
     "models",
     "webhooks",
+    "nexus",
 ]
