@@ -30,6 +30,11 @@ generative-ai-playground/
 │   └── pipeline-kotlin/
 ├── gateway-rust/
 ├── mesh-go/
+├── security/
+├── policy-engine/
+├── runtime-control/
+├── governance/
+├── feature-flags/
 ├── infra/
 ├── docs/
 ├── tests/
