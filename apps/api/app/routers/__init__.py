@@ -2,6 +2,7 @@ from . import api_keys, auth, costs, governance, inference, knowledge_base, metr
 
 __all__ = [
     "auth",
+    "nexus",
     "users",
     "api_keys",
     "pipelines",

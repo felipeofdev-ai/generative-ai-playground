@@ -20,7 +20,6 @@ This repository contains practical experiments and projects involving Generative
 - Docker / Terraform / Helm
 
 ## Project Structure
-
 ```text
 generative-ai-playground/
 ├── apps/
@@ -46,3 +45,18 @@ generative-ai-playground/
 - ADK integration plan (PT-BR): `docs/nexusai-adk-integration-plan.md`
 - Production hardening plan (PT-BR): `docs/nexusai-production-hardening-plan.md`
 - Reference artifacts: `docs/reference/`
+
+## Setup
+
+1. Create and activate a virtual environment.
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+3. Create a `.env` file based on `.env.example` and configure provider credentials.
+4. Run local services with your preferred workflow (`docker-compose`, direct FastAPI + worker, etc.).
+
+## Author
+
+Felipe Oliveira  
+Python Developer | Backend | Automation | Generative AI

@@ -1,5 +1,4 @@
 version: "3.9"
-
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -36,6 +35,7 @@ services:
       retries: 10
 
   api:
+    init: true
     build:
       context: ./apps/api
       dockerfile: Dockerfile
@@ -117,6 +117,8 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
     container_name: nexusai-web
     restart: unless-stopped
     ports:
