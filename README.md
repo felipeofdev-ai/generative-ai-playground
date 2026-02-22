@@ -39,6 +39,7 @@ generative-ai-playground/
 
 ## Documentation
 
+- System overview (EN): `docs/SYSTEM_DOCUMENTATION.md`
 - Full documentation (PT-BR): `docs/nexusai-documentacao.md`
 - Implementation blueprint (EN): `docs/nexusai-implementation-blueprint.md`
 - Enterprise architecture (PT-BR): `docs/nexusai-enterprise-architecture.md`

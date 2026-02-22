@@ -36,7 +36,6 @@ services:
       retries: 10
 
   api:
-    init: true
     build:
       context: ./apps/api
       dockerfile: Dockerfile
