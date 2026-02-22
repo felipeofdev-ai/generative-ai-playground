@@ -25,11 +25,7 @@ This repository contains practical experiments and projects involving Generative
 generative-ai-playground/
 ├── apps/
 │   ├── api/
-│   ├── worker/
-│   ├── web/
-│   └── pipeline-kotlin/
-├── gateway-rust/
-├── mesh-go/
+│   └── worker/
 ├── security/
 ├── policy-engine/
 ├── runtime-control/
@@ -41,29 +37,11 @@ generative-ai-playground/
 └── README.md
 ```
 
-## Quick Start (Docker)
-
-```bash
-cp .env.example .env
-docker compose up -d --build
-```
-
-Endpoints:
-
-- Web UI: http://localhost:3000
-- API docs: http://localhost:8000/docs
-- Gateway health: http://localhost:8080/health
-- Mesh health: http://localhost:9000/health
-
-## Migration Behavior
-
-- `MIGRATE_ON_START=1` runs migration **only if** `alembic.ini` exists.
-- `MIGRATE_ON_START=0` starts API directly with `uvicorn`.
-
 ## Documentation
 
-- `docs/nexusai-documentacao.md`
-- `docs/nexusai-implementation-blueprint.md`
-- `docs/nexusai-enterprise-architecture.md`
-- `docs/nexusai-adk-integration-plan.md`
-- `docs/nexusai-production-hardening-plan.md`
+- Full documentation (PT-BR): `docs/nexusai-documentacao.md`
+- Implementation blueprint (EN): `docs/nexusai-implementation-blueprint.md`
+- Enterprise architecture (PT-BR): `docs/nexusai-enterprise-architecture.md`
+- ADK integration plan (PT-BR): `docs/nexusai-adk-integration-plan.md`
+- Production hardening plan (PT-BR): `docs/nexusai-production-hardening-plan.md`
+- Reference artifacts: `docs/reference/`
