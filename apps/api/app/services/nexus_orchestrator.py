@@ -236,7 +236,9 @@ class NexusOrchestrator:
             elif provider == "deepseek":
                 result = await self._deepseek_call(model_id, msgs, system_prompt, temperature, max_tokens)
             else:
-                result = await self._openai_compatible_call(model_id, provider, msgs, system_prompt, temperature, max_tokens)
+                result = await self._openai_compatible_call(
+                    model_id, provider, msgs, system_prompt, temperature, max_tokens
+                )
 
             latency = (time.monotonic() - start) * 1000
             input_tokens = result.get("input_tokens", 0)
@@ -306,7 +308,7 @@ class NexusOrchestrator:
             "Authorization": f"Bearer {settings.deepseek_api_key}",
             "Content-Type": "application/json",
         }
-        payload = {
+        payload: dict = {
             "model": model_id,
             "messages": msgs,
             "temperature": temperature,
@@ -384,7 +386,9 @@ class NexusOrchestrator:
                 async for text in stream.text_stream:
                     yield text
         else:
-            result = await self._call_model(model_id, prompt, messages, system_prompt, temperature, max_tokens)
+            result = await self._call_model(
+                model_id, prompt, messages, system_prompt, temperature, max_tokens
+            )
             for word in result.response.split():
                 yield word + " "
                 await asyncio.sleep(0.01)
@@ -414,7 +418,10 @@ class NexusOrchestrator:
 
         synthesized = consensus_score < settings.nexus_consensus_threshold
         if synthesized and len(results) >= 2:
-            final = f"[NEXUS Synthesized — {len(results)} models, consensus {consensus_score:.0%}]\n\n{best.response}"
+            final = (
+                f"[NEXUS Synthesized — {len(results)} models, "
+                f"consensus {consensus_score:.0%}]\n\n{best.response}"
+            )
         else:
             final = best.response
         return consensus_score, synthesized, final

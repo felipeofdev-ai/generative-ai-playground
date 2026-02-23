@@ -2,7 +2,6 @@
 NexusAI — Configuration & Settings
 All environment variables with sensible defaults for development.
 """
-
 from functools import lru_cache
 from typing import Literal
 

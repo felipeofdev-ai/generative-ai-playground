@@ -1,7 +1,4 @@
-"""
-NexusAI — FastAPI main application
-Tier 1 Enterprise AI Orchestration Platform
-"""
+"""NexusAI — FastAPI main application entrypoint."""
 
 import time
 from contextlib import asynccontextmanager
@@ -48,7 +45,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
 app = FastAPI(
     title="NexusAI API",
-    description="World's Most Advanced Enterprise GenAI Orchestration Platform",
+    description="Enterprise GenAI Orchestration Platform",
     version="3.0.0",
     docs_url="/docs" if settings.is_development else None,
     redoc_url="/redoc" if settings.is_development else None,

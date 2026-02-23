@@ -51,9 +51,31 @@ async def get_current_tenant(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict:
-    tenant_id = request.headers.get("X-Tenant-ID", "")
+    tenant_id = request.headers.get("X-Tenant-ID") or getattr(request.state, "tenant_id", "")
+
     if not tenant_id:
-        return {"id": "default", "name": "Default", "plan": "starter"}
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.removeprefix("Bearer ").strip()
+            try:
+                payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+                tenant_id = payload.get("tenant_id", "")
+            except JWTError:
+                tenant_id = ""
+
+    if not tenant_id:
+        raw_api_key = request.headers.get("X-API-Key", "")
+        if raw_api_key:
+            key_hash = APIKey.hash(raw_api_key)
+            key_result = await db.execute(
+                select(APIKey).where(APIKey.key_hash == key_hash, APIKey.is_active.is_(True))
+            )
+            key = key_result.scalar_one_or_none()
+            tenant_id = key.tenant_id if key else ""
+
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context not found")
+
     result = await db.execute(select(Tenant).where(Tenant.id == tenant_id, Tenant.status == "active"))
     tenant = result.scalar_one_or_none()
     if not tenant:
@@ -78,13 +100,21 @@ async def get_api_key_context(
     key = result.scalar_one_or_none()
     if not key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
-    return {"id": key.id, "tenant_id": key.tenant_id, "permissions": key.permissions, "rate_limit_rpm": key.rate_limit_rpm}
+    return {
+        "id": key.id,
+        "tenant_id": key.tenant_id,
+        "permissions": key.permissions,
+        "rate_limit_rpm": key.rate_limit_rpm,
+    }
 
 
 def require_role(*roles: str):
     async def checker(user: dict = Depends(get_current_user)):
         if user["role"] not in roles:
-            raise HTTPException(status_code=403, detail=f"Role '{user['role']}' not permitted. Required: {roles}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"Role '{user['role']}' not permitted. Required: {roles}",
+            )
         return user
 
     return checker

@@ -8,6 +8,7 @@ from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies import get_current_tenant, get_current_user
 from app.models.pipeline import Pipeline, PipelineExecution
 
 router = APIRouter()
@@ -26,8 +27,15 @@ class ExecuteRequest(BaseModel):
 
 
 @router.get("/")
-async def list_pipelines(db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
-    result = await db.execute(select(Pipeline).where(Pipeline.status == "active").order_by(desc(Pipeline.created_at)))
+async def list_pipelines(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+) -> dict:
+    result = await db.execute(
+        select(Pipeline)
+        .where(Pipeline.status == "active", Pipeline.tenant_id == tenant["id"])
+        .order_by(desc(Pipeline.created_at))
+    )
     pipelines = result.scalars().all()
     return {
         "pipelines": [
@@ -45,10 +53,15 @@ async def list_pipelines(db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
 
 
 @router.post("/", status_code=201)
-async def create_pipeline(req: PipelineCreate, db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
+async def create_pipeline(
+    req: PipelineCreate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+    user: Annotated[dict, Depends(get_current_user)],
+) -> dict:
     pipeline = Pipeline(
-        tenant_id="",
-        created_by="",
+        tenant_id=tenant["id"],
+        created_by=user["id"],
         name=req.name,
         description=req.description,
         steps=req.steps,
@@ -65,12 +78,14 @@ async def execute_pipeline(
     req: ExecuteRequest,
     background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
 ) -> dict:
-    result = await db.execute(select(Pipeline).where(Pipeline.id == pipeline_id))
+    result = await db.execute(
+        select(Pipeline).where(Pipeline.id == pipeline_id, Pipeline.tenant_id == tenant["id"])
+    )
     pipeline = result.scalar_one_or_none()
     if not pipeline:
         raise HTTPException(status_code=404, detail="Pipeline not found")
-
     execution = PipelineExecution(
         pipeline_id=pipeline_id,
         tenant_id=pipeline.tenant_id,
@@ -79,11 +94,9 @@ async def execute_pipeline(
     )
     db.add(execution)
     await db.commit()
-
     if req.async_execution:
         background_tasks.add_task(run_pipeline_async, execution.id, pipeline.id)
         return {"execution_id": execution.id, "status": "queued"}
-
     return {"execution_id": execution.id, "status": "running"}
 
 
@@ -92,8 +105,19 @@ async def run_pipeline_async(execution_id: str, pipeline_id: str) -> None:
 
 
 @router.get("/{pipeline_id}/executions")
-async def list_executions(pipeline_id: str, db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
-    result = await db.execute(select(PipelineExecution).where(PipelineExecution.pipeline_id == pipeline_id).limit(50))
+async def list_executions(
+    pipeline_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+) -> dict:
+    result = await db.execute(
+        select(PipelineExecution)
+        .where(
+            PipelineExecution.pipeline_id == pipeline_id,
+            PipelineExecution.tenant_id == tenant["id"],
+        )
+        .limit(50)
+    )
     execs = result.scalars().all()
     return {
         "executions": [

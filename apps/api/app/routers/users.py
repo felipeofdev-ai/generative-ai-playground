@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.dependencies import require_role
+from app.dependencies import get_current_tenant, require_role
 from app.models.user import User
 from app.routers.auth import hash_password
 
@@ -31,10 +31,12 @@ class UserUpdate(BaseModel):
 @router.get("/")
 async def list_users(
     db: Annotated[AsyncSession, Depends(get_db)],
-    _auth: Annotated[bool, Depends(require_role(["admin", "developer"]))],
-    tenant_id: str = "",
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+    _auth: Annotated[dict, Depends(require_role("admin", "developer"))],
 ) -> dict:
-    result = await db.execute(select(User).where(User.tenant_id == tenant_id, User.is_active.is_(True)))
+    result = await db.execute(
+        select(User).where(User.tenant_id == tenant["id"], User.is_active.is_(True))
+    )
     users = result.scalars().all()
     return {
         "users": [
@@ -53,9 +55,14 @@ async def list_users(
 
 
 @router.post("/invite", status_code=201)
-async def invite_user(req: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
+async def invite_user(
+    req: UserCreate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+    _auth: Annotated[dict, Depends(require_role("admin"))],
+) -> dict:
     user = User(
-        tenant_id="",
+        tenant_id=tenant["id"],
         email=req.email,
         full_name=req.full_name,
         role=req.role,
@@ -67,8 +74,16 @@ async def invite_user(req: UserCreate, db: Annotated[AsyncSession, Depends(get_d
 
 
 @router.patch("/{user_id}")
-async def update_user(user_id: str, req: UserUpdate, db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
-    result = await db.execute(select(User).where(User.id == user_id))
+async def update_user(
+    user_id: str,
+    req: UserUpdate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+    _auth: Annotated[dict, Depends(require_role("admin"))],
+) -> dict:
+    result = await db.execute(
+        select(User).where(User.id == user_id, User.tenant_id == tenant["id"])
+    )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -83,8 +98,15 @@ async def update_user(user_id: str, req: UserUpdate, db: Annotated[AsyncSession,
 
 
 @router.delete("/{user_id}", status_code=204)
-async def delete_user(user_id: str, db: Annotated[AsyncSession, Depends(get_db)]) -> None:
-    result = await db.execute(select(User).where(User.id == user_id))
+async def delete_user(
+    user_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+    _auth: Annotated[dict, Depends(require_role("admin"))],
+) -> None:
+    result = await db.execute(
+        select(User).where(User.id == user_id, User.tenant_id == tenant["id"])
+    )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

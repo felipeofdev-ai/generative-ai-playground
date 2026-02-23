@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies import get_current_tenant, get_current_user
 from app.models.api_key import APIKey
 
 router = APIRouter()
@@ -23,8 +24,13 @@ class CreateKeyRequest(BaseModel):
 
 
 @router.get("/")
-async def list_keys(db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
-    result = await db.execute(select(APIKey).where(APIKey.is_active.is_(True)))
+async def list_keys(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+) -> dict:
+    result = await db.execute(
+        select(APIKey).where(APIKey.is_active.is_(True), APIKey.tenant_id == tenant["id"])
+    )
     keys = result.scalars().all()
     return {
         "keys": [
@@ -44,18 +50,27 @@ async def list_keys(db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
 
 
 @router.post("/", status_code=201)
-async def create_key(req: CreateKeyRequest, db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
+async def create_key(
+    req: CreateKeyRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+    user: Annotated[dict, Depends(get_current_user)],
+) -> dict:
     raw_key, hashed = APIKey.generate()
     key = APIKey(
-        tenant_id="",
-        created_by="",
+        tenant_id=tenant["id"],
+        created_by=user["id"],
         name=req.name,
         key_hash=hashed,
         key_prefix=raw_key[:20],
         permissions=req.permissions,
         allowed_models=req.allowed_models,
         rate_limit_rpm=req.rate_limit_rpm,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=req.expires_in_days) if req.expires_in_days else None,
+        expires_at=(
+            datetime.now(timezone.utc) + timedelta(days=req.expires_in_days)
+            if req.expires_in_days
+            else None
+        ),
     )
     db.add(key)
     await db.commit()
@@ -68,8 +83,14 @@ async def create_key(req: CreateKeyRequest, db: Annotated[AsyncSession, Depends(
 
 
 @router.delete("/{key_id}", status_code=204)
-async def revoke_key(key_id: str, db: Annotated[AsyncSession, Depends(get_db)]) -> None:
-    result = await db.execute(select(APIKey).where(APIKey.id == key_id))
+async def revoke_key(
+    key_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+) -> None:
+    result = await db.execute(
+        select(APIKey).where(APIKey.id == key_id, APIKey.tenant_id == tenant["id"])
+    )
     key = result.scalar_one_or_none()
     if not key:
         raise HTTPException(status_code=404, detail="Key not found")

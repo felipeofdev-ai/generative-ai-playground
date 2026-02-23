@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies import get_current_tenant
 from app.models.knowledge_base import Document, KnowledgeBase
 
 router = APIRouter()
@@ -21,8 +22,13 @@ class SearchRequest(BaseModel):
 
 
 @router.get("/")
-async def list_knowledge_bases(db: Annotated[AsyncSession, Depends(get_db)]) -> dict:
-    result = await db.execute(select(KnowledgeBase))
+async def list_knowledge_bases(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    tenant: Annotated[dict, Depends(get_current_tenant)],
+) -> dict:
+    result = await db.execute(
+        select(KnowledgeBase).where(KnowledgeBase.tenant_id == tenant["id"])
+    )
     kbs = result.scalars().all()
     return {
         "knowledge_bases": [
@@ -38,8 +44,13 @@ async def list_knowledge_bases(db: Annotated[AsyncSession, Depends(get_db)]) -> 
 
 
 @router.post("/", status_code=201)
-async def create_kb(name: str, description: str = "", db: AsyncSession = Depends(get_db)) -> dict:
-    kb = KnowledgeBase(tenant_id="", name=name, description=description)
+async def create_kb(
+    name: str,
+    description: str = "",
+    db: AsyncSession = Depends(get_db),
+    tenant: dict = Depends(get_current_tenant),
+) -> dict:
+    kb = KnowledgeBase(tenant_id=tenant["id"], name=name, description=description)
     db.add(kb)
     await db.commit()
     return {"id": kb.id, "name": kb.name}
@@ -49,19 +60,22 @@ async def create_kb(name: str, description: str = "", db: AsyncSession = Depends
 async def upload_document(
     kb_id: str,
     file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = None,
+    background_tasks: BackgroundTasks | None = None,
     db: AsyncSession = Depends(get_db),
+    tenant: dict = Depends(get_current_tenant),
 ) -> dict:
     if background_tasks is None:
         background_tasks = BackgroundTasks()
-
-    result = await db.execute(select(KnowledgeBase).where(KnowledgeBase.id == kb_id))
+    result = await db.execute(
+        select(KnowledgeBase).where(
+            KnowledgeBase.id == kb_id,
+            KnowledgeBase.tenant_id == tenant["id"],
+        )
+    )
     kb = result.scalar_one_or_none()
     if not kb:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
-
     content = await file.read()
-
     doc = Document(
         kb_id=kb_id,
         tenant_id=kb.tenant_id,
@@ -72,9 +86,7 @@ async def upload_document(
     )
     db.add(doc)
     await db.commit()
-
     background_tasks.add_task(index_document, doc.id, content, kb.embedding_model)
-
     return {"id": doc.id, "name": doc.name, "status": "indexing", "size_bytes": len(content)}
 
 

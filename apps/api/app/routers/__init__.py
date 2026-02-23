@@ -1,4 +1,19 @@
-from . import api_keys, auth, costs, governance, inference, knowledge_base, metrics, models, nexus, pipelines, tenants, users, webhooks
+"""FastAPI router package exports."""
+from . import (
+    api_keys,
+    auth,
+    costs,
+    governance,
+    inference,
+    knowledge_base,
+    metrics,
+    models,
+    nexus,
+    pipelines,
+    tenants,
+    users,
+    webhooks,
+)
 
 __all__ = [
     "auth",
@@ -14,5 +29,4 @@ __all__ = [
     "inference",
     "models",
     "webhooks",
-    "nexus",
 ]
