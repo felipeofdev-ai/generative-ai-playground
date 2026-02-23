@@ -26,7 +26,9 @@ async def list_knowledge_bases(
     db: Annotated[AsyncSession, Depends(get_db)],
     tenant: Annotated[dict, Depends(get_current_tenant)],
 ) -> dict:
-    result = await db.execute(select(KnowledgeBase).where(KnowledgeBase.tenant_id == tenant["id"]))
+    result = await db.execute(
+        select(KnowledgeBase).where(KnowledgeBase.tenant_id == tenant["id"])
+    )
     kbs = result.scalars().all()
     return {
         "knowledge_bases": [
@@ -64,16 +66,16 @@ async def upload_document(
 ) -> dict:
     if background_tasks is None:
         background_tasks = BackgroundTasks()
-
     result = await db.execute(
-        select(KnowledgeBase).where(KnowledgeBase.id == kb_id, KnowledgeBase.tenant_id == tenant["id"])
+        select(KnowledgeBase).where(
+            KnowledgeBase.id == kb_id,
+            KnowledgeBase.tenant_id == tenant["id"],
+        )
     )
     kb = result.scalar_one_or_none()
     if not kb:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
-
     content = await file.read()
-
     doc = Document(
         kb_id=kb_id,
         tenant_id=kb.tenant_id,
@@ -84,9 +86,7 @@ async def upload_document(
     )
     db.add(doc)
     await db.commit()
-
     background_tasks.add_task(index_document, doc.id, content, kb.embedding_model)
-
     return {"id": doc.id, "name": doc.name, "status": "indexing", "size_bytes": len(content)}
 
 

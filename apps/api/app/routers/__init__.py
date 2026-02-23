@@ -1,5 +1,4 @@
 """FastAPI router package exports."""
-
 from . import (
     api_keys,
     auth,
@@ -9,6 +8,7 @@ from . import (
     knowledge_base,
     metrics,
     models,
+    nexus,
     pipelines,
     tenants,
     users,
@@ -17,6 +17,7 @@ from . import (
 
 __all__ = [
     "auth",
+    "nexus",
     "users",
     "api_keys",
     "pipelines",

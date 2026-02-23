@@ -66,7 +66,11 @@ async def create_key(
         permissions=req.permissions,
         allowed_models=req.allowed_models,
         rate_limit_rpm=req.rate_limit_rpm,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=req.expires_in_days) if req.expires_in_days else None,
+        expires_at=(
+            datetime.now(timezone.utc) + timedelta(days=req.expires_in_days)
+            if req.expires_in_days
+            else None
+        ),
     )
     db.add(key)
     await db.commit()
@@ -84,7 +88,9 @@ async def revoke_key(
     db: Annotated[AsyncSession, Depends(get_db)],
     tenant: Annotated[dict, Depends(get_current_tenant)],
 ) -> None:
-    result = await db.execute(select(APIKey).where(APIKey.id == key_id, APIKey.tenant_id == tenant["id"]))
+    result = await db.execute(
+        select(APIKey).where(APIKey.id == key_id, APIKey.tenant_id == tenant["id"])
+    )
     key = result.scalar_one_or_none()
     if not key:
         raise HTTPException(status_code=404, detail="Key not found")

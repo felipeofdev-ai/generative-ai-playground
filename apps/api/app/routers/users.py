@@ -81,7 +81,9 @@ async def update_user(
     tenant: Annotated[dict, Depends(get_current_tenant)],
     _auth: Annotated[dict, Depends(require_role("admin"))],
 ) -> dict:
-    result = await db.execute(select(User).where(User.id == user_id, User.tenant_id == tenant["id"]))
+    result = await db.execute(
+        select(User).where(User.id == user_id, User.tenant_id == tenant["id"])
+    )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -102,7 +104,9 @@ async def delete_user(
     tenant: Annotated[dict, Depends(get_current_tenant)],
     _auth: Annotated[dict, Depends(require_role("admin"))],
 ) -> None:
-    result = await db.execute(select(User).where(User.id == user_id, User.tenant_id == tenant["id"]))
+    result = await db.execute(
+        select(User).where(User.id == user_id, User.tenant_id == tenant["id"])
+    )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

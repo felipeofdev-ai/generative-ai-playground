@@ -80,11 +80,12 @@ async def execute_pipeline(
     db: Annotated[AsyncSession, Depends(get_db)],
     tenant: Annotated[dict, Depends(get_current_tenant)],
 ) -> dict:
-    result = await db.execute(select(Pipeline).where(Pipeline.id == pipeline_id, Pipeline.tenant_id == tenant["id"]))
+    result = await db.execute(
+        select(Pipeline).where(Pipeline.id == pipeline_id, Pipeline.tenant_id == tenant["id"])
+    )
     pipeline = result.scalar_one_or_none()
     if not pipeline:
         raise HTTPException(status_code=404, detail="Pipeline not found")
-
     execution = PipelineExecution(
         pipeline_id=pipeline_id,
         tenant_id=pipeline.tenant_id,
@@ -93,11 +94,9 @@ async def execute_pipeline(
     )
     db.add(execution)
     await db.commit()
-
     if req.async_execution:
         background_tasks.add_task(run_pipeline_async, execution.id, pipeline.id)
         return {"execution_id": execution.id, "status": "queued"}
-
     return {"execution_id": execution.id, "status": "running"}
 
 
@@ -113,7 +112,10 @@ async def list_executions(
 ) -> dict:
     result = await db.execute(
         select(PipelineExecution)
-        .where(PipelineExecution.pipeline_id == pipeline_id, PipelineExecution.tenant_id == tenant["id"])
+        .where(
+            PipelineExecution.pipeline_id == pipeline_id,
+            PipelineExecution.tenant_id == tenant["id"],
+        )
         .limit(50)
     )
     execs = result.scalars().all()

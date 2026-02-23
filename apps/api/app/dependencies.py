@@ -100,13 +100,21 @@ async def get_api_key_context(
     key = result.scalar_one_or_none()
     if not key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
-    return {"id": key.id, "tenant_id": key.tenant_id, "permissions": key.permissions, "rate_limit_rpm": key.rate_limit_rpm}
+    return {
+        "id": key.id,
+        "tenant_id": key.tenant_id,
+        "permissions": key.permissions,
+        "rate_limit_rpm": key.rate_limit_rpm,
+    }
 
 
 def require_role(*roles: str):
     async def checker(user: dict = Depends(get_current_user)):
         if user["role"] not in roles:
-            raise HTTPException(status_code=403, detail=f"Role '{user['role']}' not permitted. Required: {roles}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"Role '{user['role']}' not permitted. Required: {roles}",
+            )
         return user
 
     return checker

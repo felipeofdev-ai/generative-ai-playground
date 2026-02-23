@@ -1,1 +1,1 @@
-"""Middleware package."""
+"""NexusAI Middleware"""
