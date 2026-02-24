@@ -56,6 +56,10 @@ generative-ai-playground/
 - Production hardening plan (PT-BR): `docs/nexusai-production-hardening-plan.md`
 - Operational modules: `feature-flags/`, `runtime-control/`, `governance/`, `tests/`
 
+## NexusAI Documentation
+
+- Full system documentation (PT-BR): `docs/nexusai-documentacao.md`
+
 ## Setup
 
 1. Create and activate a virtual environment.
